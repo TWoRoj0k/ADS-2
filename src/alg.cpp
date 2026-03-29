@@ -24,41 +24,42 @@ uint64_t fact(uint16_t n) {
     return result;
 }
 
-static uint16_t currentType = 0;
+// Глобальная переменная для определения контекста вызова
+static uint16_t g_type = 0;  // 0 - exp, 1 - sin, 2 - cos
 
 double calcItem(double x, uint16_t n) {
-    switch (currentType) {
-        case 0: {  // exp
+    switch (g_type) {
+        case 0:  // exp
             return pown(x, n) / static_cast<double>(fact(n));
-        }
         case 1: {  // sin
             uint16_t exponent = 2 * n + 1;
             double numerator = pown(x, exponent);
             uint64_t denominator = fact(exponent);
+            double result = numerator / static_cast<double>(denominator);
             if (n % 2 != 0) {
-                numerator = -numerator;
+                result = -result;
             }
-            return numerator / static_cast<double>(denominator);
+            return result;
         }
         case 2: {  // cos
             uint16_t exponent = 2 * n;
             double numerator = pown(x, exponent);
             uint64_t denominator = fact(exponent);
+            double result = numerator / static_cast<double>(denominator);
             if (n % 2 != 0) {
-                numerator = -numerator;
+                result = -result;
             }
-            return numerator / static_cast<double>(denominator);
+            return result;
         }
-        default: {
+        default:
             return 0.0;
-        }
     }
 }
 
 double expn(double x, uint16_t count) {
     double sum = 0.0;
-    currentType = 0;
-    for (uint16_t n = 0; n < count; ++n) {
+    g_type = 0;
+    for (uint16_t n = 0; n <= count; ++n) {
         sum += calcItem(x, n);
     }
     return sum;
@@ -66,28 +67,18 @@ double expn(double x, uint16_t count) {
 
 double sinn(double x, uint16_t count) {
     double sum = 0.0;
-    double term = x;  // Первый член (n=0): x
-    sum = term;
-    
-    for (uint16_t n = 1; n < count; ++n) {
-        // Рекуррентное соотношение для sin
-        // term(n) = term(n-1) * (-x*x) / ((2*n-1) * (2*n))
-        term *= (-x * x) / ((2 * n - 1) * (2 * n));
-        sum += term;
+    g_type = 1;
+    for (uint16_t n = 0; n < count; ++n) {
+        sum += calcItem(x, n);
     }
     return sum;
 }
 
 double cosn(double x, uint16_t count) {
     double sum = 0.0;
-    double term = 1.0;  // Первый член (n=0): 1
-    sum = term;
-    
-    for (uint16_t n = 1; n < count; ++n) {
-        // Рекуррентное соотношение для cos
-        // term(n) = term(n-1) * (-x*x) / ((2*n-2) * (2*n-1))
-        term *= (-x * x) / ((2 * n - 2) * (2 * n - 1));
-        sum += term;
+    g_type = 2;
+    for (uint16_t n = 0; n < count; ++n) {
+        sum += calcItem(x, n);
     }
     return sum;
 }
